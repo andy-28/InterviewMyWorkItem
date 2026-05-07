@@ -1,14 +1,8 @@
 # My Work Item
 
-This repository contains a .NET + React implementation for the B2E "My Work Item" interview exercise.
+Full-stack implementation for the B2E "My Work Item" interview exercise.
 
-The current implementation focuses on a runnable full-stack demo with:
-
-- Front office Work Item list UI
-- Per-user confirm / unconfirm state
-- Admin Work Item management UI
-- .NET Web API with SQLite persistence
-- Swagger for API inspection
+The project provides a runnable Web UI, .NET API, SQLite persistence, and Swagger API documentation. It is designed so the interview demo can be shown from the browser instead of only through Swagger.
 
 ## Tech Stack
 
@@ -26,12 +20,12 @@ cd backend
 dotnet run --launch-profile http
 ```
 
-Backend URL:
+Backend URLs:
 
 - API: `http://localhost:5091`
 - Swagger: `http://localhost:5091/swagger`
 
-The backend runs EF Core migrations automatically on startup and seeds sample Work Items when the database is empty.
+The backend applies EF Core migrations on startup and seeds sample Work Items when the database is empty.
 
 ### Frontend
 
@@ -43,33 +37,49 @@ npm.cmd run dev
 
 Frontend URL:
 
-- App: `http://localhost:5173`
+- App: `http://localhost:5173/work-items`
 
 On Windows PowerShell, use `npm.cmd` if normal `npm` is blocked by execution policy.
+
+## Demo Paths
+
+Front office:
+
+- `/work-items`
+- `/work-items/{id}`
+
+Admin:
+
+- `/admin/work-items`
+- `/admin/work-items/new`
+- `/admin/work-items/{id}/edit`
 
 ## Demo Flow
 
 ### Front Office
 
-1. Open `http://localhost:5173`.
-2. Use the `Front` view.
-3. Switch between sample users `alice` and `bob`.
-4. Select one or more Work Items.
-5. Click `Confirm selected`.
-6. Confirmed status is stored per user.
-7. Click `撤銷確認` to mark a confirmed item back to pending.
+1. Open `http://localhost:5173/work-items`.
+2. Switch between sample users `alice` and `bob`.
+3. Change sort direction with the sort dropdown.
+4. Move between pages with pagination controls.
+5. Select one or more Work Items.
+6. Click `Confirm selected`.
+7. Open `View detail` to inspect the Work Item detail page.
+8. Return to the list; user, sort, and page state are preserved through query string parameters.
+9. Click the unconfirm action on confirmed items to mark them back to pending.
 
 ### Admin
 
-1. Open `http://localhost:5173`.
-2. Click `Admin`.
+1. Open `http://localhost:5173/admin/work-items`.
+2. Click `New Work Item`.
 3. Create a Work Item with title and optional description.
-4. Edit an existing Work Item.
-5. Delete an existing Work Item after confirmation.
+4. Click `Edit` on an existing Work Item.
+5. Save changes.
+6. Delete an existing Work Item after confirmation.
 
-## PDF Requirement Progress
+## Requirement Progress
 
-Source requirement: `AI 考題 — B2E 題型：My Work Item.pdf`
+Source requirement: PDF exercise "AI Coding - B2E: My Work Item".
 
 | Area | Requirement | Current Status |
 | --- | --- | --- |
@@ -79,8 +89,8 @@ Source requirement: `AI 考題 — B2E 題型：My Work Item.pdf`
 | Database | Basic persistence | Completed with SQLite + EF Core |
 | Work Item list | Show id, title, status | Completed |
 | Empty state | Show message when no data exists | Completed |
-| Default sorting | Newest first by default | Completed in backend query |
-| Sort switching | User can switch ascending / descending | Not implemented yet |
+| Default sorting | Newest first by default | Completed |
+| Sort switching | User can switch ascending / descending | Completed |
 | Multi-select | Row checkbox and select all | Completed |
 | Selected row feedback | Selected row has visual highlight | Completed |
 | Confirm action | Confirm selected items for current user only | Completed |
@@ -88,15 +98,103 @@ Source requirement: `AI 考題 — B2E 題型：My Work Item.pdf`
 | User feedback | Success and error messages | Completed |
 | Per-user state | Confirmation state is separated by user | Completed |
 | Persist user state | State remains after reload | Completed |
-| Detail page | `/work-items/{id}` with full item fields | API completed, UI page not implemented yet |
-| Return to list | Return from detail while preserving list state | Not implemented yet |
-| Admin create | Admin can create Work Items | Completed with Admin UI |
-| Admin update | Admin can edit Work Items | Completed with Admin UI |
-| Admin delete | Admin can delete Work Items | Completed with Admin UI |
+| Detail page | `/work-items/{id}` with full item fields | Completed |
+| Return to list | Return from detail while preserving list state | Completed |
+| Pagination state | Preserve page state when returning from detail | Completed |
+| Admin create | Admin can create Work Items | Completed |
+| Admin update | Admin can edit Work Items | Completed |
+| Admin delete | Admin can delete Work Items | Completed |
+| Admin routes | `/admin/work-items/new`, `/admin/work-items/{id}/edit` | Completed |
 | API spec | Swagger / API inspection | Completed |
 | README | Startup and progress documentation | Completed |
-| Architecture diagram | C4 or equivalent architecture diagram | Not implemented yet |
-| DB schema / ERD | Table schema or ERD | Partially covered by EF models and migrations; diagram not added yet |
+| Architecture diagram | C4 or equivalent architecture diagram | Completed below |
+| DB schema / ERD | Table schema or ERD | Completed below |
+| Automated tests | Unit/integration tests | Not implemented yet |
+
+## Current Implementation Phases
+
+### Phase 1 - JIRA-like UI refresh
+
+Status: completed and build-verified.
+
+- Added an issue-tracker style sidebar.
+- Added dashboard-style page headers.
+- Reworked the front-office list into an issue table.
+- Added summary cards for total, pending, and confirmed Work Items.
+- Added clearer status badges, tag-chip styling, and action buttons.
+- Reworked the admin screen into a dashboard management view.
+
+### Phase 2 - Work Item labels / tags
+
+Status: in progress.
+
+Implemented in code so far:
+
+- Added backend `Tag` and `WorkItemTag` models.
+- Added a many-to-many relationship between `WorkItem` and `Tag`.
+- Added `TagDto`.
+- Added `Tags` to Work Item list/detail DTOs.
+- Added `TagIds` to create/update requests.
+- Added `GET /api/admin/tags`.
+- Added seeded demo labels such as `onboarding`, `setup`, `security`, and `reporting`.
+- Updated the frontend API types for tags.
+- Updated the front/admin UI to render real tag chips and support tag selection in the admin form.
+
+Phase 2 remaining work:
+
+- Re-run the backend and verify the new migration is applied to the SQLite database.
+- Verify `GET /api/admin/tags` returns seeded tags.
+- Verify `GET /api/work-items` and detail responses include tags.
+- Browser-test creating and editing a Work Item with selected tags.
+- Confirm existing Work Items receive seeded tags as expected.
+- Push a follow-up commit after Phase 2 is fully verified, if this checkpoint commit is pushed first.
+
+## Architecture Diagram
+
+```mermaid
+flowchart LR
+  User["Front office user"] --> React["React + Vite UI"]
+  Admin["Admin user"] --> React
+  React --> Api["ASP.NET Core Web API"]
+  Api --> Service["WorkItemService"]
+  Service --> DbContext["EF Core DbContext"]
+  DbContext --> SQLite["SQLite database"]
+  Api --> Swagger["Swagger UI"]
+```
+
+## Data Model
+
+```mermaid
+erDiagram
+  WorkItems ||--o{ UserWorkItemStatuses : has
+  WorkItems ||--o{ WorkItemTags : has
+  Tags ||--o{ WorkItemTags : has
+  WorkItems {
+    int Id PK
+    string Title
+    string Description
+    datetime CreatedAt
+    datetime UpdatedAt
+  }
+  UserWorkItemStatuses {
+    int Id PK
+    string UserId
+    int WorkItemId FK
+    bool IsConfirmed
+    datetime ConfirmedAt
+  }
+  Tags {
+    int Id PK
+    string Name
+    string Color
+  }
+  WorkItemTags {
+    int WorkItemId FK
+    int TagId FK
+  }
+```
+
+`UserWorkItemStatuses` has a unique index on `UserId + WorkItemId`, so each user's confirmation state is stored independently.
 
 ## API Summary
 
@@ -110,36 +208,51 @@ Front office:
 Admin:
 
 - `GET /api/admin/work-items`
+- `GET /api/admin/tags`
 - `POST /api/admin/work-items`
 - `PUT /api/admin/work-items/{id}`
 - `DELETE /api/admin/work-items/{id}`
 
-## Data Model
+## Validation Approach
 
-Main tables:
+Manual validation performed during development:
 
-- `WorkItems`
-  - `Id`
-  - `Title`
-  - `Description`
-  - `CreatedAt`
-  - `UpdatedAt`
+- `dotnet build`
+- `npm.cmd run build`
+- Browser smoke test for front list, admin list, create, edit, delete, and detail navigation
+- API smoke checks through `Invoke-RestMethod`
 
-- `UserWorkItemStatuses`
-  - `Id`
-  - `UserId`
-  - `WorkItemId`
-  - `IsConfirmed`
-  - `ConfirmedAt`
+Current validation note:
 
-`UserWorkItemStatuses` has a unique index on `UserId + WorkItemId`, so each user's state is stored independently.
+- Phase 1 UI changes have been build-verified.
+- Phase 2 Tag/Label changes have been build-verified, but the migration/API/browser flow still needs runtime verification.
 
-## Current Notes
+Recommended next test additions:
 
-- The project was aligned to `.NET 8` because the current Windows machine has .NET SDK `8.0.420` installed.
-- The frontend currently uses an in-app view switch instead of route-based pages.
-- The next best improvements are:
-  - Add `/work-items/{id}` detail UI
-  - Add sort controls on the front list
-  - Add an architecture diagram
-  - Add automated tests for service logic and admin API behavior
+- Service unit tests for per-user confirmation behavior
+- API integration tests for admin CRUD
+- Frontend component tests for list state and detail navigation
+
+## AI Tool Usage Notes
+
+AI assistance was used to:
+
+- Translate PDF requirements into user-story checkpoints
+- Generate the initial API/UI implementation shape
+- Identify implementation gaps against the PDF
+- Draft README progress documentation
+- Run build and browser verification loops
+
+AI output was reviewed and adjusted by:
+
+- Running frontend and backend builds
+- Testing browser flows against the running local app
+- Removing template API code not related to the exercise
+- Aligning the backend target framework to the installed company laptop SDK: .NET SDK `8.0.420`
+
+## Remaining Work
+
+- Finish Phase 2 Tag/Label runtime verification
+- Add automated tests
+- Improve frontend structure by splitting large `App.tsx` into route/page components
+- Add authentication or role handling if the interview scope expands beyond sample users

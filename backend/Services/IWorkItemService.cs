@@ -6,6 +6,8 @@ public interface IWorkItemService
 {
     Task<List<WorkItemListDto>> GetAdminWorkItemsAsync();
 
+    Task<List<TagDto>> GetTagsAsync();
+
     Task<List<WorkItemListDto>> GetWorkItemsForUserAsync(string userId, string? sort);
 
     Task<WorkItemDetailDto?> GetWorkItemDetailForUserAsync(int id, string userId);

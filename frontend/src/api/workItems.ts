@@ -9,6 +9,7 @@ export type WorkItemListDto = {
   isConfirmed: boolean
   createdAt: string
   updatedAt: string
+  tags: TagDto[]
 }
 
 export type WorkItemDetailDto = WorkItemListDto & {
@@ -18,6 +19,13 @@ export type WorkItemDetailDto = WorkItemListDto & {
 export type WorkItemPayload = {
   title: string
   description?: string
+  tagIds?: number[]
+}
+
+export type TagDto = {
+  id: number
+  name: string
+  color: string
 }
 
 type ApiMessageResponse = {
@@ -91,6 +99,10 @@ export async function unconfirmWorkItem(userId: UserId, workItemId: number) {
 
 export async function getAdminWorkItems() {
   return request<WorkItemListDto[]>('/api/admin/work-items')
+}
+
+export async function getTags() {
+  return request<TagDto[]>('/api/admin/tags')
 }
 
 export async function getWorkItemDetail(workItemId: number, userId: UserId | 'admin') {

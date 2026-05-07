@@ -13,4 +13,6 @@ public class WorkItem
     public DateTime UpdatedAt { get; set; }
 
     public ICollection<UserWorkItemStatus> UserStatuses { get; set; } = [];
+
+    public ICollection<WorkItemTag> WorkItemTags { get; set; } = [];
 }

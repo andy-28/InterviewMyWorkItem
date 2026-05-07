@@ -105,6 +105,15 @@ public class WorkItemsController(IWorkItemService workItemService) : ControllerB
         return Ok(workItems);
     }
 
+    [HttpGet("api/admin/tags")]
+    [ProducesResponseType(typeof(List<TagDto>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<List<TagDto>>> GetTags()
+    {
+        var tags = await workItemService.GetTagsAsync();
+
+        return Ok(tags);
+    }
+
     [HttpPost("api/admin/work-items")]
     [ProducesResponseType(typeof(WorkItemDetailDto), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ApiMessageResponse), StatusCodes.Status400BadRequest)]

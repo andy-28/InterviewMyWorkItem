@@ -18,7 +18,30 @@ public class WorkItemService(WorkItemDbContext dbContext) : IWorkItemService
                 Title = workItem.Title,
                 IsConfirmed = false,
                 CreatedAt = workItem.CreatedAt,
-                UpdatedAt = workItem.UpdatedAt
+                UpdatedAt = workItem.UpdatedAt,
+                Tags = workItem.WorkItemTags
+                    .OrderBy(workItemTag => workItemTag.Tag.Name)
+                    .Select(workItemTag => new TagDto
+                    {
+                        Id = workItemTag.Tag.Id,
+                        Name = workItemTag.Tag.Name,
+                        Color = workItemTag.Tag.Color
+                    })
+                    .ToList()
+            })
+            .ToListAsync();
+    }
+
+    public async Task<List<TagDto>> GetTagsAsync()
+    {
+        return await dbContext.Tags
+            .AsNoTracking()
+            .OrderBy(tag => tag.Name)
+            .Select(tag => new TagDto
+            {
+                Id = tag.Id,
+                Name = tag.Name,
+                Color = tag.Color
             })
             .ToListAsync();
     }
@@ -36,7 +59,16 @@ public class WorkItemService(WorkItemDbContext dbContext) : IWorkItemService
                     .Select(status => status.IsConfirmed)
                     .FirstOrDefault(),
                 CreatedAt = workItem.CreatedAt,
-                UpdatedAt = workItem.UpdatedAt
+                UpdatedAt = workItem.UpdatedAt,
+                Tags = workItem.WorkItemTags
+                    .OrderBy(workItemTag => workItemTag.Tag.Name)
+                    .Select(workItemTag => new TagDto
+                    {
+                        Id = workItemTag.Tag.Id,
+                        Name = workItemTag.Tag.Name,
+                        Color = workItemTag.Tag.Color
+                    })
+                    .ToList()
             });
 
         query = NormalizeSort(sort) switch
@@ -69,7 +101,16 @@ public class WorkItemService(WorkItemDbContext dbContext) : IWorkItemService
                     .Select(status => status.IsConfirmed)
                     .FirstOrDefault(),
                 CreatedAt = workItem.CreatedAt,
-                UpdatedAt = workItem.UpdatedAt
+                UpdatedAt = workItem.UpdatedAt,
+                Tags = workItem.WorkItemTags
+                    .OrderBy(workItemTag => workItemTag.Tag.Name)
+                    .Select(workItemTag => new TagDto
+                    {
+                        Id = workItemTag.Tag.Id,
+                        Name = workItemTag.Tag.Name,
+                        Color = workItemTag.Tag.Color
+                    })
+                    .ToList()
             })
             .FirstOrDefaultAsync();
     }
@@ -154,8 +195,9 @@ public class WorkItemService(WorkItemDbContext dbContext) : IWorkItemService
 
         dbContext.WorkItems.Add(workItem);
         await dbContext.SaveChangesAsync();
+        await SyncWorkItemTagsAsync(workItem.Id, request.TagIds);
 
-        return MapToDetailDto(workItem, isConfirmed: false);
+        return (await GetWorkItemDetailForUserAsync(workItem.Id, "admin"))!;
     }
 
     public async Task<WorkItemDetailDto?> UpdateWorkItemAsync(int id, UpdateWorkItemRequest request)
@@ -172,8 +214,9 @@ public class WorkItemService(WorkItemDbContext dbContext) : IWorkItemService
         workItem.UpdatedAt = DateTime.UtcNow;
 
         await dbContext.SaveChangesAsync();
+        await SyncWorkItemTagsAsync(workItem.Id, request.TagIds);
 
-        return MapToDetailDto(workItem, isConfirmed: false);
+        return await GetWorkItemDetailForUserAsync(workItem.Id, "admin");
     }
 
     public async Task<bool> DeleteWorkItemAsync(int id)
@@ -201,16 +244,28 @@ public class WorkItemService(WorkItemDbContext dbContext) : IWorkItemService
         return string.IsNullOrWhiteSpace(description) ? null : description.Trim();
     }
 
-    private static WorkItemDetailDto MapToDetailDto(WorkItem workItem, bool isConfirmed)
+    private async Task SyncWorkItemTagsAsync(int workItemId, IEnumerable<int> tagIds)
     {
-        return new WorkItemDetailDto
+        var distinctTagIds = tagIds.Distinct().ToList();
+        var existingTagIds = await dbContext.Tags
+            .Where(tag => distinctTagIds.Contains(tag.Id))
+            .Select(tag => tag.Id)
+            .ToListAsync();
+        var existingLinks = await dbContext.WorkItemTags
+            .Where(workItemTag => workItemTag.WorkItemId == workItemId)
+            .ToListAsync();
+
+        dbContext.WorkItemTags.RemoveRange(existingLinks);
+
+        foreach (var tagId in existingTagIds)
         {
-            Id = workItem.Id,
-            Title = workItem.Title,
-            Description = workItem.Description,
-            IsConfirmed = isConfirmed,
-            CreatedAt = workItem.CreatedAt,
-            UpdatedAt = workItem.UpdatedAt
-        };
+            dbContext.WorkItemTags.Add(new WorkItemTag
+            {
+                WorkItemId = workItemId,
+                TagId = tagId
+            });
+        }
+
+        await dbContext.SaveChangesAsync();
     }
 }

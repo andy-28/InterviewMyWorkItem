@@ -11,4 +11,6 @@ public class WorkItemListDto
     public DateTime CreatedAt { get; set; }
 
     public DateTime UpdatedAt { get; set; }
+
+    public List<TagDto> Tags { get; set; } = [];
 }
