@@ -126,9 +126,9 @@ Status: completed and build-verified.
 
 ### Phase 2 - Work Item labels / tags
 
-Status: in progress.
+Status: completed and runtime-verified.
 
-Implemented in code so far:
+Implemented:
 
 - Added backend `Tag` and `WorkItemTag` models.
 - Added a many-to-many relationship between `WorkItem` and `Tag`.
@@ -140,14 +140,14 @@ Implemented in code so far:
 - Updated the frontend API types for tags.
 - Updated the front/admin UI to render real tag chips and support tag selection in the admin form.
 
-Phase 2 remaining work:
+Runtime verification completed:
 
-- Re-run the backend and verify the new migration is applied to the SQLite database.
-- Verify `GET /api/admin/tags` returns seeded tags.
-- Verify `GET /api/work-items` and detail responses include tags.
-- Browser-test creating and editing a Work Item with selected tags.
-- Confirm existing Work Items receive seeded tags as expected.
-- Push a follow-up commit after Phase 2 is fully verified, if this checkpoint commit is pushed first.
+- Confirmed the tag migration creates `Tags` and `WorkItemTags`.
+- Confirmed `GET /api/admin/tags` returns seeded tags.
+- Confirmed `GET /api/work-items` and detail responses include tags.
+- Confirmed the front-office issue table renders tag chips.
+- Confirmed the admin form renders tag selection controls.
+- Confirmed create/update/delete API flow persists and replaces tag selections.
 
 ## Architecture Diagram
 
@@ -221,11 +221,12 @@ Manual validation performed during development:
 - `npm.cmd run build`
 - Browser smoke test for front list, admin list, create, edit, delete, and detail navigation
 - API smoke checks through `Invoke-RestMethod`
+- Runtime verification for Phase 2 tag migration, tag API, tag chips, and tag persistence
 
 Current validation note:
 
 - Phase 1 UI changes have been build-verified.
-- Phase 2 Tag/Label changes have been build-verified, but the migration/API/browser flow still needs runtime verification.
+- Phase 2 Tag/Label changes have been build-verified and runtime-verified.
 
 Recommended next test additions:
 
@@ -252,7 +253,6 @@ AI output was reviewed and adjusted by:
 
 ## Remaining Work
 
-- Finish Phase 2 Tag/Label runtime verification
 - Add automated tests
 - Improve frontend structure by splitting large `App.tsx` into route/page components
 - Add authentication or role handling if the interview scope expands beyond sample users
