@@ -11,6 +11,15 @@ export type WorkItemListDto = {
   updatedAt: string
 }
 
+export type WorkItemDetailDto = WorkItemListDto & {
+  description?: string | null
+}
+
+export type WorkItemPayload = {
+  title: string
+  description?: string
+}
+
 type ApiMessageResponse = {
   message?: string
 }
@@ -78,4 +87,36 @@ export async function unconfirmWorkItem(userId: UserId, workItemId: number) {
       method: 'POST',
     },
   )
+}
+
+export async function getAdminWorkItems() {
+  return request<WorkItemListDto[]>('/api/admin/work-items')
+}
+
+export async function getWorkItemDetail(workItemId: number, userId: UserId | 'admin') {
+  const params = new URLSearchParams({ userId })
+
+  return request<WorkItemDetailDto>(
+    `/api/work-items/${workItemId}?${params.toString()}`,
+  )
+}
+
+export async function createWorkItem(payload: WorkItemPayload) {
+  return request<WorkItemDetailDto>('/api/admin/work-items', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  })
+}
+
+export async function updateWorkItem(workItemId: number, payload: WorkItemPayload) {
+  return request<WorkItemDetailDto>(`/api/admin/work-items/${workItemId}`, {
+    method: 'PUT',
+    body: JSON.stringify(payload),
+  })
+}
+
+export async function deleteWorkItem(workItemId: number) {
+  return request<ApiMessageResponse>(`/api/admin/work-items/${workItemId}`, {
+    method: 'DELETE',
+  })
 }
